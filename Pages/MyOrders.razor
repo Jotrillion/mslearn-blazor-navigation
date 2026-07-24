@@ -1,0 +1,59 @@
+@page "/myorders"
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+<div class="main">
+    @if (latestOrder == null && isLoading)
+    {
+        <text>Loading...</text>
+    }
+    else if (latestOrder == null)
+    {
+        <h2>No orders placed</h2>
+        <a class="btn btn-success" href="/">Order some pizza</a>
+    }
+    else
+    {
+        <div class="orders-list">
+            <div class="order-card">
+                <div class="order-card-heading">
+                    <h5>ORDER PLACED @latestOrder.Order.CreatedTime.ToString("dddd, d MMMM yyyy").ToUpper()</h5>
+                    <div class="order-card-status">
+                        <span>Status:</span>
+                        <strong>@latestOrder.StatusText</strong>
+                    </div>
+                </div>
+                <div class="order-card-body">
+                    @foreach (var pizza in latestOrder.Order.Pizzas)
+                    {
+                        <div class="order-card-item">
+                            <div class="order-card-item-title">@(pizza.Size)" @pizza.Special?.Name</div>
+                            <div class="order-card-item-price">@pizza.GetFormattedTotalPrice()</div>
+                        </div>
+                    }
+                </div>
+                <div class="order-card-footer">
+                    <div class="order-card-summary">
+                        <span>Items: <strong>@latestOrder.Order.Pizzas.Count()</strong></span>
+                        <span>Total price: <strong>@latestOrder.Order.GetFormattedTotalPrice()</strong></span>
+                    </div>
+                    <a href="/myorders/@latestOrder.Order.OrderId" class="btn btn-success">
+                        Track &gt;
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    OrderWithStatus latestOrder;
+    bool isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        latestOrder = await HttpClient.GetFromJsonAsync<OrderWithStatus>(
+            $"{NavigationManager.BaseUri}orders/latest");
+        isLoading = false;
+    }
+}

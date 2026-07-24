@@ -1,0 +1,91 @@
+@page "/pizzas"
+@page "/pizzas/{pizzaname}"
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager NavManager
+
+<h1>Buy a Pizza</h1>
+
+@if (!string.IsNullOrWhiteSpace(PizzaName))
+{
+    <p>I want to order a: @PizzaName</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(ToppingName))
+{
+    <p>I want to add this topping: @ToppingName</p>
+}
+
+<NavLink href="@HomePageURI" Match="NavLinkMatch.All">Home Page</NavLink>
+
+<button class="btn" @onclick="NavigateToPaymentPage">Buy this pizza!</button>
+
+<p>We have all these delicious recipes:</p>
+
+@if (todaysPizzas.Count == 0)
+{
+    <p>No pizzas are available right now.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Pizza Name</th>
+                <th>Description</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pizza in todaysPizzas)
+            {
+                <tr>
+                    <td>@pizza.Name</td>
+                    <td>@pizza.Description</td>
+                    <td>@pizza.GetFormattedBasePrice()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public string PizzaName { get; set; }
+
+    private string ToppingName { get; set; }
+    public string HomePageURI { get; set; }
+    private List<PizzaSpecial> todaysPizzas = new();
+
+    protected override void OnInitialized()
+    {
+        HomePageURI = NavManager.BaseUri;
+    }
+
+    protected override void OnParametersSet()
+    {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (!string.IsNullOrWhiteSpace(PizzaName))
+        {
+            PizzaName = PizzaName;
+        }
+        else if (query.TryGetValue("pizza", out var pizzaName))
+        {
+            PizzaName = System.Convert.ToString(pizzaName);
+        }
+
+        if (query.TryGetValue("extratopping", out var extraTopping))
+        {
+            ToppingName = System.Convert.ToString(extraTopping);
+        }
+
+        todaysPizzas = new List<PizzaSpecial>();
+    }
+
+    private void NavigateToPaymentPage()
+    {
+        NavManager.NavigateTo("buypizza");
+    }
+}
