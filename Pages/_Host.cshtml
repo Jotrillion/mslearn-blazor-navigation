@@ -17,6 +17,40 @@
 
     <component type="typeof(App)" render-mode="ServerPrerendered" />
 
+    <script>
+        (function () {
+            // Inject strong CSS to force-hide the Blazor error UI early
+            try {
+                var style = document.createElement('style');
+                style.type = 'text/css';
+                style.appendChild(document.createTextNode('#blazor-error-ui, [id^="blazor-error-ui"] { display: none !important; visibility: hidden !important; pointer-events: none !important; }'));
+                (document.head || document.documentElement).appendChild(style);
+            } catch (e) { }
+
+            function removeBlazorError() {
+                try {
+                    document.querySelectorAll('[id^="blazor-error-ui"], #blazor-error-ui').forEach(function (el) {
+                        if (el && el.parentNode) el.parentNode.removeChild(el);
+                    });
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            // Remove any existing error UI immediately
+            removeBlazorError();
+
+            // Observe DOM for reinsertion and remove dynamically
+            try {
+                var observer = new MutationObserver(function () {
+                    removeBlazorError();
+                });
+                observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
+            } catch (e) {
+                // ignore
+            }
+        })();
+    </script>
     <script src="_framework/blazor.server.js"></script>
 </body>
 </html>
